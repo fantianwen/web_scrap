@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 # coding:utf-8
 
-import config
-from openpyxl import Workbook
 import time
-
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-
 import re
 import datetime
 import asyncio
+
+from openpyxl import Workbook
+from selenium import webdriver
+
+import config
 
 DAYS = config.DAYS
 D_CITY = config.D_CITY
@@ -46,9 +43,10 @@ def begin(save):
     driver.get(entry_url)
     driver.find_element_by_xpath('//*[@id="reSearchForm"]/div/div[3]/input').click()
     time.sleep(2)
-    # driver.execute_script("window.scrollTo(0, document.body.scrollHeight/2);")
+    for i in range(2):
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(5)
     flights = driver.find_element_by_xpath('//*[@id="J_flightlist2"]')
-    # flights.get_attribute()
     children = flights.find_elements_by_xpath('div')
     print(children)
     for child in children:
@@ -85,7 +83,7 @@ def begin(save):
             save.send(l)
             yield
 
-    while coun < DAYS + coun:
+    while coun < DAYS + 2:
         coun = coun + 1
         day = driver.find_element_by_xpath('//*[@id="J_controlPannel"]/div[1]/div[2]/ul/li[%d]' % coun)
         date = day.get_attribute('date').strip()
@@ -95,13 +93,16 @@ def begin(save):
         yield
         # 下面一天
         driver.find_element_by_xpath('//*[@id="J_controlPannel"]/div[1]/div[2]/ul/li[%d]/a' % coun).click()
+        time.sleep(3)
+        for i in range(2):
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(5)
         flag = coun % 2
         if flag == 1:
             id_ = 'J_flightlist1'
         else:
             id_ = 'J_flightlist2'
         flights_ = driver.find_element_by_xpath('//*[@id="%s"]' % id_)
-        time.sleep(3)
         print(flights_.get_attribute('id'))
         # flights.get_attribute()
         children_ = flights_.find_elements_by_xpath('div')
